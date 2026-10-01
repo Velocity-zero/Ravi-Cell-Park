@@ -79,16 +79,28 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-300 ml-1">Initial Stock</label>
-            <input 
-              name="stock"
-              type="number" 
-              min="0"
-              required
-              defaultValue="1"
-              className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-300 ml-1">Initial Stock</label>
+              <input 
+                name="stock"
+                type="number" 
+                min="0"
+                required
+                defaultValue="1"
+                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-300 ml-1">Barcode (Optional)</label>
+              <input 
+                name="barcode"
+                type="text" 
+                placeholder="Scan or type barcode"
+                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              />
+            </div>
           </div>
 
           <div className="pt-4">

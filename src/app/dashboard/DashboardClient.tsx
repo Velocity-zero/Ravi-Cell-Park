@@ -1,8 +1,9 @@
 "use client";
 
-import { Package, Search, Tag, IndianRupee, Camera, Loader2, Plus, Minus, Trash2 } from "lucide-react";
+import { Package, Search, Tag, IndianRupee, Camera, Loader2, Plus, Minus, Trash2, ScanBarcode } from "lucide-react";
 import { useState, useRef, useTransition } from "react";
 import { deleteProduct, updateStock } from "./actions";
+import BarcodeScanner from "./BarcodeScanner";
 
 type Product = {
   id: string;
@@ -11,20 +12,23 @@ type Product = {
   fixed_price: number;
   min_price: number;
   stock: number;
+  barcode: string | null;
 };
 
 export default function DashboardClient({ initialProducts }: { initialProducts: Product[] }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isScanning, setIsScanning] = useState(false);
+  const [isScanningImage, setIsScanningImage] = useState(false);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProducts = initialProducts.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.barcode && p.barcode.includes(searchQuery))
   );
 
-  const handleScanClick = () => {
+  const handleImageScanClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -32,7 +36,7 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsScanning(true);
+    setIsScanningImage(true);
     try {
       const formData = new FormData();
       formData.append("image", file);
@@ -53,9 +57,14 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
       console.error(err);
       alert("Error scanning image");
     } finally {
-      setIsScanning(false);
+      setIsScanningImage(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const handleBarcodeResult = (barcode: string) => {
+    setShowBarcodeScanner(false);
+    setSearchQuery(barcode); // Automatically search for this barcode
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -79,6 +88,13 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
 
   return (
     <div className="space-y-6">
+      {showBarcodeScanner && (
+        <BarcodeScanner 
+          onResult={handleBarcodeResult} 
+          onClose={() => setShowBarcodeScanner(false)} 
+        />
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           Inventory
@@ -93,10 +109,18 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
+              placeholder="Search by name or barcode..."
               className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
+
+          <button 
+            onClick={() => setShowBarcodeScanner(true)}
+            className="flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white p-2.5 rounded-xl shadow-lg transition-colors border border-white/10 shrink-0"
+            title="Scan Barcode"
+          >
+            <ScanBarcode className="w-5 h-5" />
+          </button>
 
           <input 
             type="file" 
@@ -107,12 +131,12 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
             className="hidden" 
           />
           <button 
-            onClick={handleScanClick}
-            disabled={isScanning}
+            onClick={handleImageScanClick}
+            disabled={isScanningImage}
             className="flex items-center justify-center bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white p-2.5 rounded-xl shadow-lg transition-colors border border-white/10 shrink-0"
-            title="Smart Scan"
+            title="AI Image Scan"
           >
-            {isScanning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
+            {isScanningImage ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
           </button>
         </div>
       </div>

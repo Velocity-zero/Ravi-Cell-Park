@@ -10,6 +10,7 @@ export async function addProduct(formData: FormData) {
   const fixed_price = parseFloat(formData.get("fixed_price") as string);
   const min_price = parseFloat(formData.get("min_price") as string);
   const stock = parseInt(formData.get("stock") as string, 10);
+  const barcode = (formData.get("barcode") as string) || null;
 
   const supabase = await createClient();
 
@@ -20,6 +21,7 @@ export async function addProduct(formData: FormData) {
       fixed_price,
       min_price,
       stock,
+      barcode,
     },
   ]);
 
