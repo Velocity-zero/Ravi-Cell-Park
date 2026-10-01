@@ -1,11 +1,21 @@
 import Link from "next/link";
 import { PackageSearch, Plus, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { logout } from "@/app/actions";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error || !data?.user) {
+    redirect("/");
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <nav className="sticky top-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/10">
@@ -27,12 +37,14 @@ export default function DashboardLayout({
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Add Product</span>
               </Link>
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-              </Link>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </form>
             </div>
           </div>
         </div>

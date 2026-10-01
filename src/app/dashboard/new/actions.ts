@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -10,6 +10,8 @@ export async function addProduct(formData: FormData) {
   const fixed_price = parseFloat(formData.get("fixed_price") as string);
   const min_price = parseFloat(formData.get("min_price") as string);
   const stock = parseInt(formData.get("stock") as string, 10);
+
+  const supabase = await createClient();
 
   const { error } = await supabase.from("products").insert([
     {
