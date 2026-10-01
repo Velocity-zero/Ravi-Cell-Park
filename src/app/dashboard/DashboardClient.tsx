@@ -1,7 +1,8 @@
 "use client";
 
-import { Package, Search, Tag, IndianRupee, Camera, Loader2 } from "lucide-react";
-import { useState, useRef } from "react";
+import { Package, Search, Tag, IndianRupee, Camera, Loader2, Plus, Minus, Trash2 } from "lucide-react";
+import { useState, useRef, useTransition } from "react";
+import { deleteProduct, updateStock } from "./actions";
 
 type Product = {
   id: string;
@@ -15,6 +16,7 @@ type Product = {
 export default function DashboardClient({ initialProducts }: { initialProducts: Product[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProducts = initialProducts.filter((p) =>
@@ -52,9 +54,27 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
       alert("Error scanning image");
     } finally {
       setIsScanning(false);
-      // Reset input so they can scan same file again if needed
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    if (confirm(`Are you sure you want to delete ${name}?`)) {
+      startTransition(async () => {
+        const res = await deleteProduct(id);
+        if (res.error) alert(res.error);
+      });
+    }
+  };
+
+  const handleStockUpdate = (id: string, currentStock: number, change: number) => {
+    const newStock = currentStock + change;
+    if (newStock < 0) return;
+    
+    startTransition(async () => {
+      const res = await updateStock(id, newStock);
+      if (res.error) alert(res.error);
+    });
   };
 
   return (
@@ -117,10 +137,10 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="glass-panel p-5 group hover:bg-white/[0.08] transition-all cursor-pointer">
+            <div key={product.id} className={`glass-panel p-5 group transition-all relative overflow-hidden ${isPending ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+                <div className="pr-12">
+                  <h3 className="text-lg font-semibold text-white transition-colors">
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-1 mt-1 text-xs text-zinc-400 bg-white/5 inline-flex px-2 py-1 rounded-md border border-white/5">
@@ -128,12 +148,14 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                     {product.category}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Stock</div>
-                  <div className={`text-sm font-bold ${product.stock > 5 ? 'text-green-400' : 'text-orange-400'}`}>
-                    {product.stock} units
-                  </div>
-                </div>
+                
+                <button 
+                  onClick={() => handleDelete(product.id, product.name)}
+                  className="absolute top-4 right-4 w-8 h-8 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  title="Delete Product"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-5 p-3 bg-black/20 rounded-xl border border-white/5">
@@ -152,6 +174,29 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                   </div>
                 </div>
               </div>
+
+              {/* Stock Management Row */}
+              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
+                  Stock: <span className={`text-sm ml-1 font-bold ${product.stock > 5 ? 'text-green-400' : product.stock > 0 ? 'text-orange-400' : 'text-red-500'}`}>{product.stock} units</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => handleStockUpdate(product.id, product.stock, -1)}
+                    disabled={product.stock === 0}
+                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 disabled:opacity-50 transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleStockUpdate(product.id, product.stock, 1)}
+                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
             </div>
           ))}
         </div>
