@@ -1,4 +1,5 @@
 import { Smartphone, Lock, User, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -49,13 +50,13 @@ export default function Home() {
               </div>
             </div>
 
-            <button 
-              type="button" 
-              className="w-full mt-8 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group"
+            <Link 
+              href="/dashboard"
+              className="w-full mt-8 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group block text-center"
             >
               Secure Login
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </Link>
           </form>
 
           <div className="mt-8 text-center">
