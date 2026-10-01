@@ -1,0 +1,17 @@
+{
+  "name": "Ravi Cell Park",
+  "short_name": "Ravi Cell",
+  "description": "Store Inventory and Price Management App",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [
+    {
+      "src": "/icon-512x512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
